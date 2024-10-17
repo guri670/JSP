@@ -78,7 +78,11 @@ if (session.getAttribute("midx") != null){ // 로그인이 되었으면
       <a href="<%=request.getContextPath() %>/member/memberList.aws">
       회원목록보기
       </a>
-         </div>
-
+    </div>
+       <div>
+         <a href="<%=request.getContextPath()%>/board/boardList.aws">
+         게시판 가기
+         </a>
+       </div>
 </body>
 </html>

@@ -146,4 +146,36 @@ public class MemberDao { // MVC방식으로 가기전에 첫번째 model 1 방�
 		return alist ;
 		
 	}
+	
+	
+	public int memberIdCheck(String memberId) {
+
+		//MemberVo mv = null;
+		String sql = "select count(*) as cnt from member where memberid = ? ";
+
+		int cnt = 0;
+		ResultSet rs = null; // db에서 결과 데이터를 받아오는 전용 클래스
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, memberId);
+			rs = pstmt.executeQuery(); // ResultSet으로 받는다
+
+			if (rs.next()) { // 커서가 이동해서 값이 있으면 if(rs.next())와 같은 표현
+				cnt = rs.getInt("cnt"); // 결과값에서 회원번호를 뽑는다.
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+				pstmt.close();
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return cnt;
+	}
 }
+

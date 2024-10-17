@@ -10,7 +10,7 @@
 <script>
 //alert("ddddd");
 
-const email = /[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]$/i;
+const email = /[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[ 0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]$/i;
 	
 //alert(email.test("hello5#emaicom"));
 	
@@ -24,6 +24,10 @@ function check(){
 	
 	if (fm.memberid.value ==""){
 		alert("아이디를 입력해주세요");
+		fm.memberid.focus();
+		return;
+	}else if (fm.btn.value =="N"){
+		alert("아이디 중복체크를 해주세요")
 		fm.memberid.focus();
 		return;
 	}else if (fm.memberpwd.value ==""){		
@@ -73,39 +77,67 @@ function check(){
 		
 		
 		// 가상경로를 사용해서 쓸 예정 , 가짜경로의 형식은 /기능/세부기능.aws
-		fm.action="<%=request.getContextPath()%>/member/memberJoinAction.aws";
-		fm.method="post"; 
-		fm.submit();
-	}
-	return;   //리턴에 값을 안쓰면 그냥 멈춤 종료
-}
 
-
-function hobbyCheck(){
-	
-	var arr =  document.frm.memberhobby;   //문서객체안에 폼객체 안에 input객체 선언
-	var flag = false; 								  //체크유무 초기값 false 선언
-	
-	for(var i=0;i<arr.length;i++){		       //선택한 여러값을 반복해서 출력
-		 if (arr[i].checked  == true){  	       //하나라도 선택했다면 true값 리턴
-			 flag = true;	
-			 break;
-		 }
+	fm.action = "<%=request.getContextPath()%>/member/memberJoinAction.aws";
+			fm.method = "post";
+			fm.submit();
+		}
+		return; //리턴에 값을 안쓰면 그냥 멈춤 종료
 	}
-	
-	/* if (flag== false){
-		alert("취미를 한개 이상 선택해주세요");
-		return false;
-	}	 */
-	return flag;
-}
-$(document).ready(function(){}
-	$("#btn").click(function(){
-		alert("중복체크버튼 클릭");
+
+	function hobbyCheck() {
+
+		var arr = document.frm.memberhobby; //문서객체안에 폼객체 안에 input객체 선언
+		var flag = false; //체크유무 초기값 false 선언
+
+		for (var i = 0; i < arr.length; i++) { //선택한 여러값을 반복해서 출력
+			if (arr[i].checked == true) { //하나라도 선택했다면 true값 리턴
+				flag = true;
+				break;
+			}
+		}
+
+		/* if (flag== false){
+			alert("취미를 한개 이상 선택해주세요");
+			return false;
+		}	 */
+		return flag;
+	}
+	$(document).ready(function() {
+		
+		$("#btn").click(function() {
+			//	alert("중복체크버튼 클릭");
+
+			let memberId = $("#memberid").val();
+			if (memberId ==""){
+				alert("아이디를 입력해주세요");
+				return;
+			}
+			$.ajax({
+				type : "post", // 전송방식
+				url : "<%=request.getContextPath()%> /member/memberIdCheck.aws", //  넘기는 주소
+				dataType : "json", // json타입은 문서에서 {"키값" : "value값","키값2": "value값2"}
+				data : { "memberId" : memberId },
+				success : function(result) { // 결과가 넘어와서 성공했을 때 받는 영역
+					// alert("전송 성공 테스트");
+					// alert("길이는? " + result.length);
+					alert("cnt값은? " + result.cnt);
+					
+					if (result.cnt == 0){
+						alert("사용할 수 있는 아이디입니다.");
+						$("btn").val("Y");
+					} else {
+						alert("사용할 수 없는 아이디입니다.");
+						$("#memberid").val(""); // 입력한 아이디 지우기
+					}
+				},
+				error : function(result) {
+					alert("전송 실패 테스트");
+				}
+
+			});
+		});
 	});
-});
-
-
 </script>
 </HEAD>
 
@@ -123,10 +155,9 @@ $(document).ready(function(){}
 				<table style="width: 800px;">
 					<tr>
 						<th class="idcolor">아이디</th>
-						<td><input type="text" name="memberid" maxlength="30"
+						<td><input type="text" id="memberid" name="memberid" maxlength="30"
 							style="width: 200px;" value="" placeholder="아이디를 입력하세요">
-							<button type ="button" id="btn"> 아이디 중복 체크 </button>
-						</td>
+							<button type="button" name="btn" id="btn" value="N">아이디 중복 체크</button></td>
 					</tr>
 					<tr>
 						<th class="idcolor">비밀번호</th>
@@ -184,8 +215,8 @@ $(document).ready(function(){}
 					</tr>
 					<tr>
 						<td colspan=2 style="text-align: center; height: 60px;">
-							<button type="button" onclick="check();">
-								<img src="../images/conc.png" width="50px" height="30px">
+							<button type="button" onclick="check();">저장하기
+								<!--<img   src="../images/conc.png" width="50px" height="30px">-->
 							</button> <!-- <input type="submit" name="btn" value="회원정보 저장하기">
 				<input type="reset" name="btn" value="초기화"> -->
 						</td>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://jakarta.ee/xml/ns/jakartaee" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd" id="WebApp_ID" version="6.0">
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://jakarta.ee/xml/ns/jakartaee" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd" id="WebApp_ID" version="5.0">
   <display-name>mvc_programming</display-name>
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
@@ -10,15 +10,17 @@
     <welcome-file>default.htm</welcome-file>
   </welcome-file-list>
   
-  <!-- 웹서버 설정파일이라서 가상경로를 등록한다 -->
-  <!-- controller라는 이름으로 묶고 확장자 aws로 넘어오는 모든 주소는 MemberController로 넘김 -->
+  <!-- 웹 서버 설정 파일이라서 가상 경로를 등록한다 -->
+  <!-- controller 라는 이름으로 묶고 확장자 aws로 넘어오는 모든 주소는 MemberController로 넘긴다 -->
   <servlet>
   <servlet-name>controller</servlet-name>
-  <servlet-class>mvc.controller.MemberController</servlet-class>
+  <servlet-class>mvc.controller.FrontController</servlet-class>
   </servlet>
   
   <servlet-mapping>
   <servlet-name>controller</servlet-name>
   <url-pattern>*.aws</url-pattern>
   </servlet-mapping>
+  
+    
 </web-app>

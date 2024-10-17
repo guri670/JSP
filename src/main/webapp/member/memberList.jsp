@@ -85,7 +85,10 @@ tbody tr:nth-child(even) {
 			<td><%=alist.get(i).getWriteday() %></td>
 		</tr>
 		<%} %> -->
-	<% for (MemberVo mv : alist) { %>
+		
+	<% 
+	int num = 0;
+	for (MemberVo mv : alist) { %>
 		<tr>
 			<td><%=mv.getMidx() %></td>
 			<td><%=mv.getMemberid() %></td>
@@ -93,11 +96,13 @@ tbody tr:nth-child(even) {
 			<td><%=mv.getMembergender() %></td>
 			<td><%=mv.getWriteday().substring(0, 10)%></td>
 		</tr>
-		<%} %>
+		<%
+		num = num + 1;
+		} %>
 </tbody>
 <tfoot>
 		<tr>
-			<td colspan="5">총 3명입니다.
+			<td colspan="5">총 <%=num %>명입니다.
 		</tr>
 </tfoot>
 </table>
