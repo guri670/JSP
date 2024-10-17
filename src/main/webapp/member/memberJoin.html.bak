@@ -1,0 +1,134 @@
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+<TITLE> 회원가입 </TITLE>
+<style>
+header {
+	width:100%;
+	height:100px;
+	text-align:center;
+	--background-color: yellow;
+}
+nav { 
+	width: 15%; 
+	height: 400px; 
+	float: left; 
+	--background-color: blue; 
+}
+
+section { 
+	width: 70%; 
+	height: 400px; 
+	float: left; 
+
+	--background: olivedrab; 
+}
+
+aside { 
+	width: 15%; 
+	height:400px; 
+	float: left; 
+	--background: orange; 
+}
+
+footer { 
+	width: 100%; 
+	height: 150px; 
+	clear: both; 
+	text-align:center;
+	--background: plum; 
+}
+
+
+
+</style>
+
+
+</HEAD>
+ <BODY>
+<header>회원가입 페이지</header>
+<nav></nav>
+<section>
+
+
+	<article>	
+	<form name="frm" action=".test0920_result.html" method="post">
+		<table border=1 style="width:800px;">
+			<tr>
+				<td>아이디</td>
+				<td>
+				<input type="text" name="memberId" maxlength="30" style="width:200px;" value="" placeholder="아이디를 입력하세요">
+				</td>
+			</tr>
+			<tr>
+				<td>비밀번호</td>
+				<td>
+				<input type="password" name="memberPwd" maxlength="30" style="width:100px;">
+				</td>
+			</tr>
+			<tr>
+				<td>비밀번호확인</td>
+				<td><input type="password" name="memberPwd2" maxlength="30" style="width:100px;"></td>
+			</tr>
+			<tr>
+				<td>이름</td>
+				<td><input type="text" name="memberName" maxlength="30" style="width:200px;"></td>
+			</tr>
+			<tr>
+				<td>이메일</td>
+				<td><input type="email" name="memberEmail" maxlength="30" style="width:200px;"></td>
+			</tr>		
+			<tr>
+				<td>연락처</td>
+				<td><input type="number" name="memberPhone" maxlength="30" style="width:200px;"></td>
+			</tr>
+			<tr>
+				<td>주소</td>
+				<td>
+					<select name="memberAddr" style="width:100px;">
+						<option value="서울">서울</option>
+						<option value="대전" selected>대전</option>
+						<option value="부산">부산</option>
+						<option value="인천">인천</option>
+					</select>
+
+				</td>
+			</tr>
+			<tr>
+				<td>성별</td>
+				<td>
+				<input type="radio" name="memberGender" value="남성">남성
+				<input type="radio" name="memberGender" value="여성" checked>여성
+				</td>
+			</tr>
+			<tr>
+				<td>생년월일</td>
+				<td><input type="number" name="memberBirth" maxlength="8" style="width:100px;"> 
+				예)20240101</td>
+			</tr>
+			<tr>
+				<td>취미</td>
+				<td>
+				<input type="checkbox" name="memberHobby" value="야구">야구
+				<input type="checkbox" name="memberHobby" value="축구">축구
+				<input type="checkbox" name="memberHobby" value="농구">농구
+				</td>
+			</tr>
+			<tr>
+				<td colspan=2 style="text-align:center;">
+				<input type="submit" name="btn" value="회원정보 저장하기">
+				<input type="reset" name="btn" value="초기화">
+				</td>
+			</tr>
+		</table>
+	</form>
+</article>	
+
+</section>
+<aside>
+</aside>
+<footer>
+made by hji.
+</footer>
+</BODY>
+</HTML>
