@@ -82,7 +82,7 @@ if (session.getAttribute("midx") != null){ // 로그인이 되었으면
        <div>
          <a href="<%=request.getContextPath()%>/board/boardList.aws">
          게시판 가기
-         </a>
+         </a> 
        </div>
 </body>
 </html>
