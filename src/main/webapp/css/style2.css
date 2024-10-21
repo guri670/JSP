@@ -41,9 +41,9 @@ table th, table td { padding: 5px 10px; }
 
 
 /* paging */
-.page { margin: 50px 0 20px; text-align: center; }
+.page { margin: 50px 0 20px; text-align: center;}
 .page ul { display: inline-block; }
-.page li { display: inline-block; width: 20px; height: 20px; cursor: pointer; }
+.page li { display: inline-block; width: 30px; height: 30px; cursor: pointer; }
 .page .on { background: black; color: white; }
 
 

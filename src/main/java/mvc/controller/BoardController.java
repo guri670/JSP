@@ -6,8 +6,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import mvc.dao.BoardDao;
 import mvc.vo.BoardVo;
+import mvc.vo.Criteria;
+import mvc.vo.PageMaker;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,24 +33,75 @@ public class BoardController extends HttpServlet {
 		if(location.equals("boardList.aws")) { // 가상경로
 			//System.out.println("들어왔니");
 			
+			String page =  request.getParameter("page");
+			if (page == null) page = "1";
+			int pageInt = Integer.parseInt(page); //문자를 숫자로 변경
+			
+			Criteria cri = new Criteria();
+			cri.setPage(pageInt);
+			
+			PageMaker pm = new PageMaker();
+			pm.setCri(cri); // PageMaker에 criteria를 담아서 가지고다닌다
+			
+			
 			BoardDao bd = new BoardDao();
-			ArrayList<BoardVo> alist = bd.boardSelectAll();
+			// 페이징 처리를 위한 전체 데이터 갯수 가지고오기 쿼리 작성
+			int boardCnt = bd.boardTotalCount();
+			// System.out.println("게시물 수는? "+boardCnt);
+			pm.setTotalCnt(boardCnt); // PageMaker에 전체 게시물 수를 담아서 페이지계산 
+			
+			
+			ArrayList<BoardVo> alist = bd.boardSelectAll(cri);
 			//System.out.println("alist==> "+alist); //객체 주소가 나오면 객체가 생성된것을 알 수 있다.
 			
-			request.setAttribute("alist", alist );
+			request.setAttribute("alist", alist ); // 화면까지 가지고 가기위해 request객체에 담는다.
+			request.setAttribute("pm", pm); // forward방식으로 넘어가기 때문에 공유가 가능하다.
 			
 			paramMethod="F";
-			url=request.getContextPath()+"/board/boardList.jsp"; // 실제 내부경로
+			url="/board/boardList.jsp"; // 실제 내부경로
 		
 		} else if (location.equals("boardWrite.aws")){
+			//System.out.println("boardWrite"); // 디버깅 코드
+			//BoardDao bd = new BoardDao();
+			//ArrayList<BoardVo> alist = bd.boardSelectAll();
+			//equest.setAttribute("alist", alist);
+			
+			paramMethod="F"; // 포워드방식은 내부에서 공유하는것 이기때문에 내부에서 활동하고 이동한다
+			url="/board/boardWrite.jsp";
+		} else if (location.equals("boardWriteAction.aws")) {
+			//System.out.println("boardWriteAction.aws"); // 들어왔는지 확인하는 디버깅
+			// 1. 파라미터값을 넘겨받는다
+			String subject = request.getParameter("subject");
+			String contents = request.getParameter("contents");
+			String writer = request.getParameter("writer");
+			String password = request.getParameter("password");
+			
+			HttpSession session = request.getSession(); // 세션 객체를 불러와서
+			int midx = Integer.parseInt(session.getAttribute("midx").toString()); // 세션변수 midx 값을 꺼낸다.
+			
+			BoardVo bv = new BoardVo();
+			bv.setSubject(subject);
+			bv.setContents(contents);
+			bv.setWriter(writer);
+			bv.setPassword(password);
+			bv.setMidx(midx);
+			
+			// 2. db 처리한다
 			
 			BoardDao bd = new BoardDao();
-			ArrayList<BoardVo> alist = bd.boardSelectAll();
+			int value = bd.boardInsert(bv); // value 값이 2가 나와야 반영
 			
-			request.setAttribute("alist", alist);
-			
-			paramMethod="F";
-			url=request.getContextPath()+"/board/boardWrite.jsp";
+			if(value == 2) { // 입력 성공
+				paramMethod="S";
+				url = request.getContextPath()+"/board/boardList.aws";
+			} else {
+				paramMethod="S";
+				url = request.getContextPath()+"/board/boardWrite.aws";
+			}
+	
+			// 3. db 처리 후 이동한다 (sendRedirect)
+			// paramMethod="S";
+			// url = request.getContextPath()+"/board/boardList.aws";
 		}
 		
 		if(paramMethod.equals("F")) { 

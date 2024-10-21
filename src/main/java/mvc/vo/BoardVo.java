@@ -15,6 +15,7 @@ public class BoardVo {
 	private String delyn;
 	private String ip;
 	private int midx;
+	private String password;
 	public int getBidx() {
 		return bidx;
 	}
@@ -99,5 +100,12 @@ public class BoardVo {
 	public void setMidx(int midx) {
 		this.midx = midx;
 	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
 
 }
