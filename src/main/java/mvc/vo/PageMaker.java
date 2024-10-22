@@ -91,7 +91,7 @@ public class PageMaker {
 		// 5. 이전 다음 버튼 만들기
 		prev = (startPage ==1 ? false : true); //삼항연산자 사용
 		// startPage가 1이면 prev 는 false 아니면 true
-		//next = (endPage*cri.getPerPageNum() >= totalCnt ? false : true );
+		next = (endPage*cri.getPerPageNum() >= totalCnt ? false : true );
 		
 	}
 }

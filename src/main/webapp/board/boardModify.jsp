@@ -1,20 +1,18 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%
-// 세션정보를 꺼내서 회원정보(midx)가 없으면 로그인화면으로 넘긴다.
-if(session.getAttribute("midx") == null) {
-	out.println("<script>alert('로그인을 해주세요');location.href='"+request.getContextPath()+"/member/memberLogin.aws'</script>");
-	
-} //안됨!
-%>
     
-<!DOCTYPE html>
+<%@page import="mvc.vo.BoardVo" %>
+<%
+BoardVo bv = (BoardVo)request.getAttribute("bv");
+//강제 형변환 양쪽형을 맞춰준다.
+%> 
 
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>글쓰기</title>
-<link href="../css/style2.css" type="text/css" rel="stylesheet">
+<title>글수정</title>
+<link href="../css/style2.css" rel="stylesheet">
 <script> 
 
 function check() {
@@ -34,17 +32,16 @@ function check() {
 		  alert("작성자를 입력해주세요");
 		  fm.writer.focus();
 		  return;
-	  }else if (fm.password.value == "") {
+	  } else if (fm.password.value ==""){
 		  alert("비밀번호를 입력해주세요");
 		  fm.password.focus();
 		  return;
 	  }
 	  
 	  let ans = confirm("저장하시겠습니까?");
-	  // 함수의 값은 참과 거짓 true & false로 나눈다.
 	  
 	  if (ans == true) {
-		  fm.action="<%=request.getContextPath()%>/board/boardWriteAction.aws";
+		  fm.action="<%=request.getContextPath()%>/board/boardModifyAction.aws";
 		  fm.method="post";
 		  fm.submit();
 	  }	  
@@ -56,22 +53,24 @@ function check() {
 </head>
 <body>
 <header>
-	<h2 class="mainTitle">글쓰기</h2>
+	<h2 class="mainTitle">글수정</h2>
 </header>
 
 <form name="frm">
+<input type="hidden" name ="bidx" value="<%=bv.getBidx()%>">
+<!-- Bidx값을 가져와서 수정할 게시글의 제목 내용 작성자 등이 나오게된다. -->
 	<table class="writeTable">
 		<tr>
 			<th>제목</th>
-			<td><input type="text" name="subject"></td>
+			<td><input type="text" name="subject" value="<%=bv.getSubject() %>"></td>
 		</tr>
 		<tr>
 			<th>내용</th>
-			<td><textarea name="contents" rows="6"></textarea></td>
+			<td><textarea name="contents" rows="6"><%=bv.getContents() %></textarea></td>
 		</tr>
 		<tr>
 			<th>작성자</th>
-			<td><input type="text" name="writer"></td>
+			<td><input type="text" name="writer" value="<%=bv.getWriter() %>"></td>
 		</tr>
 		<tr>
 			<th>비밀번호</th>
@@ -79,13 +78,13 @@ function check() {
 		</tr>
 		<tr>
 			<th>첨부파일</th>
-			<td><input type="file" name="uploadfile"></td>
+			<td><input type="uploadfile"></td>
 		</tr>
 	</table>
 	
 	<div class="btnBox">
 		<button type="button" class="btn" onclick="check();">저장</button>
-		<a class="btn aBtn" onclick="history.back();">취소</a>
+		<a class="btn aBtn" href="./detail.html">취소</a>
 	</div>	
 </form>
 

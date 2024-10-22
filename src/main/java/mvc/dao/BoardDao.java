@@ -103,6 +103,7 @@ public class BoardDao {
 	}
 	
 	public int boardInsert(BoardVo bv) {
+		// System.out.println("BoardInsert");
 		int value =0;
 		
 		String subject = bv.getSubject();
@@ -111,10 +112,10 @@ public class BoardDao {
 		String password = bv.getPassword();
 		int midx = bv.getMidx();
 		
-		String sql = "insert into board (originbidx,depth,level_,subject,cotents,writer,password,midx)\r\n"
-				+ "value(null,0,0,'?','?','?','?','?')";
+		String sql = "insert into board (originbidx,depth,level_,subject,contents,writer,password,midx)\r\n"
+				+ "value(null,0,0,?,?,?,?,?)";
 		String sql2 = "update board set originbidx =(select A.maxbidx from(select max(bidx) as maxbidx from board)A)\r\n"
-				+ "were bidx=(select A.maxbidx from(select max(bidx) as maxbidx from board)A)";
+				+ "where bidx=(select A.maxbidx from(select max(bidx) as maxbidx from board)A)";
 		try {
 			conn.setAutoCommit(false); // 수동 커밋 (커밋도중 문제가 발생할때 대비하기위함)
 			
@@ -149,6 +150,94 @@ public class BoardDao {
 			}
 		}
 		return value;
+	} 
+	
+	public BoardVo boardSelectOne(int bidx) {
+		
+		// 1. 형식 만들기
+		BoardVo bv = null;
+		// 2. 사용할 쿼리 작성하기
+		String sql = "select *from board where delyn='N' and bidx=?";
+		ResultSet rs = null;
+		try {
+			// 3. conn객체 사용해서 쿼리실행 구문 클래스를 불러온다
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, bidx); // 첫번째 ? 에 매개변수 bidx값을 넣는다.
+			rs = pstmt.executeQuery(); // 쿼리를 실행해서 결과값을 컬럼 전용클래스인 ResultSet객체에 담는다.
+			//pstmt 멤버변수로 선언한 PreparedStatement 객체
+			
+			if(rs.next()==true) { // rs.next()는 커서를 다음줄로 이동시킨다. 맨처음 커서는 상단에 위치되어있다.
+				// 값이 존재한다면 BoardVo객체에 담는다.
+				String subject = rs.getString("subject");
+				String contents = rs.getString("contents");
+				String writer = rs.getString("writer");
+				String writeday = rs.getString("writeday");
+				int viewcnt = rs.getInt("viewcnt");
+				int recom = rs.getInt("recom");
+				String filename = rs.getString("filename");
+				int rtnbidx = rs.getInt("bidx");
+				int originbidx = rs.getInt("originbidx");
+				int depth = rs.getInt("depth");
+				int level_ = rs.getInt("level_");
+				String password = rs.getString("password");
+				
+				bv = new BoardVo();
+				// 위의값을 전부 담은 bv(지역변수)객체 생성
+				bv.setSubject(subject);
+				bv.setContents(contents);
+				bv.setWriter(writer);
+				bv.setWriteday(writeday);
+				bv.setViewcnt(viewcnt);
+				bv.setRecom(recom);
+				bv.setFilename(filename);
+				bv.setBidx(rtnbidx);
+				bv.setOriginbidx(originbidx);
+				bv.setDepth(depth);
+				bv.setLevel_(level_);
+				bv.setPassword(password);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				conn.close();
+				pstmt.close();
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return bv;
 	}
-
+	
+	// 게시물 수정하기
+	public int boardUpdate(BoardVo bv) {
+		
+		int value=0;
+		String sql = "update board set subject=?, contents=?, writer=?, modifyday= now() where bidx=? and password=?";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, bv.getSubject());
+			pstmt.setString(2, bv.getContents());
+			pstmt.setString(3, bv.getWriter());
+			pstmt.setInt(4, bv.getBidx());
+			pstmt.setString(5, bv.getPassword());
+			
+			value = pstmt.executeUpdate();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				conn.close();
+				pstmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return value;
+	}
 }
+

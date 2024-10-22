@@ -29,6 +29,7 @@ public class BoardController extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String paramMethod = ""; // 전송방식이 sendRedirect면 S forward방식이면 F
 		String url = "";
+		// System.out.println("location"+location); 디버깅 
 		
 		if(location.equals("boardList.aws")) { // 가상경로
 			//System.out.println("들어왔니");
@@ -102,6 +103,86 @@ public class BoardController extends HttpServlet {
 			// 3. db 처리 후 이동한다 (sendRedirect)
 			// paramMethod="S";
 			// url = request.getContextPath()+"/board/boardList.aws";
+			
+		} else if(location.equals("boardContents.aws")) {
+			// System.out.println("boardContents.aws"); // 디버깅코드
+			
+			// 1. 넘어온 값 받기
+			String bidx = request.getParameter("bidx");
+			// System.out.println("bidx-->"+bidx);
+			
+			int bidxInt = Integer.parseInt(bidx);
+			// String 타입의 bidx를 int형으로 변환
+			
+			// 2. 처리하기
+			BoardDao bd = new BoardDao(); //객체생성
+			BoardVo bv = bd.boardSelectOne(bidxInt); //생성한 메소드 호출
+			
+			request.setAttribute("bv", bv); 
+			//포워드방식 같은영역안에 jsp페이지에서 꺼내 쓸 수 있다.
+			
+			// 3. 이동해서 화면 보여주기
+			paramMethod = "F"; 
+			//포워드 방식 화면을 보여주기 위해서 같은 영역안에 jsp페이지를 보여준다
+			url = "/board/boardContents.jsp";
+			
+		} else if(location.equals("boardModify.aws")) {
+			// System.out.println("boardModify.aws"); // 디버깅 코드
+			
+			// 1. 넘어온 값 받기
+			String bidx = request.getParameter("bidx");
+			// System.out.println("bidx-->"+bidx);
+			
+			// 2. 처리하기
+			int bidxInt = Integer.parseInt(bidx);
+			BoardDao bd = new BoardDao();
+			BoardVo bv = bd.boardSelectOne(bidxInt);
+			
+			request.setAttribute("bv", bv); 
+			// 3. 이동해서 화면보여주기
+			paramMethod = "F";
+			url = "/board/boardModify.jsp";
+			
+		} else if(location.equals("boardModifyAction.aws")) {
+			System.out.println("boardModifyAction.aws"); // 디버깅 코드
+			
+			String subject = request.getParameter("subject");
+			String contents = request.getParameter("contents");
+			String writer = request.getParameter("writer");
+			String password = request.getParameter("password");
+			String bidx = request.getParameter("bidx");
+			
+			int bidxInt = Integer.parseInt(bidx);
+			
+			BoardDao bd = new BoardDao();
+			BoardVo bv = bd.boardSelectOne(bidxInt);
+			
+			paramMethod = "S";
+			if (password.equals(bv.getPassword())) {
+				// 비밀번호가 같으면
+				BoardDao bd2 = new BoardDao();
+				BoardVo bv2 = new BoardVo();
+				bv2.setSubject(subject);
+				bv2.setContents(contents);
+				bv2.setWriter(writer);
+				bv2.setPassword(password);
+				bv2.setBidx(bidxInt);
+				
+				int value = bd2.boardUpdate(bv2);
+				
+				if(value ==1) {
+					url = request.getContextPath()+"/board/boardContents.aws?bidx="+bidx;					
+				}else {
+					url = request.getContextPath()+"/board/boardModify.aws?bidx="+bidx;
+				}
+					
+			} else {
+				// 비밀번호가 다르면
+				url = request.getContextPath()+"/board/boardModify.aws?bidx="+bidx;
+			}
+			
+			
+		
 		}
 		
 		if(paramMethod.equals("F")) { 
@@ -117,3 +198,5 @@ public class BoardController extends HttpServlet {
 	}
 
 }
+
+
