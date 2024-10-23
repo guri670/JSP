@@ -36,6 +36,7 @@ PageMaker pm = (PageMaker)request.getAttribute("pm");
 				<th>제목</th>
 				<th>작성자</th>
 				<th>조회</th>
+				<th>추천수</th>
 				<th>날짜</th>
 			</tr>
 			<%for(BoardVo bv :alist){ %>
@@ -45,6 +46,7 @@ PageMaker pm = (PageMaker)request.getAttribute("pm");
 				<a href="<%=request.getContextPath() %>/board/boardContents.aws?bidx=<%=bv.getBidx()%>"><%=bv.getSubject() %></a></td>
 				<td><%=bv.getWriter() %></td>
 				<td><%=bv.getViewcnt() %></td>
+				<td><%=bv.getRecom() %></td>
 				<td><%=bv.getWriteday() %></td>
 			</tr>
 			<%} %>

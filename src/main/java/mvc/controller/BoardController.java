@@ -13,7 +13,11 @@ import mvc.vo.Criteria;
 import mvc.vo.PageMaker;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+
+import com.oreilly.servlet.MultipartRequest;
+import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
 
 
 @WebServlet("/BoardController")
@@ -71,6 +75,16 @@ public class BoardController extends HttpServlet {
 			url="/board/boardWrite.jsp";
 		} else if (location.equals("boardWriteAction.aws")) {
 			//System.out.println("boardWriteAction.aws"); // 들어왔는지 확인하는 디버깅
+			
+			// 저장될 위치
+			String savePath="D:\\dev\\eclipse-workspace\\java\\webPr\\mvc_programing2\\src\\main\\webapp\\Images";
+			int sizeLimit = 15*1024*1024; // 15Mb
+			String dataType ="UTF-8";
+			DefaultFileRenamePolicy policy = new DefaultFileRenamePolicy();
+			
+			MultipartRequest multi = new MultipartRequest(request,savePath,sizeLimit,dataType,policy);
+			
+			
 			// 1. 파라미터값을 넘겨받는다
 			String subject = request.getParameter("subject");
 			String contents = request.getParameter("contents");
@@ -116,7 +130,10 @@ public class BoardController extends HttpServlet {
 			
 			// 2. 처리하기
 			BoardDao bd = new BoardDao(); //객체생성
-			BoardVo bv = bd.boardSelectOne(bidxInt); //생성한 메소드 호출
+			bd.boardViewCntUpdate(bidxInt);
+			
+			BoardVo bv = bd.boardSelectOne(bidxInt); //생성한 메소드 호출 (해당되는 bidx의 게시물 데이터를 가져온다)
+			
 			
 			request.setAttribute("bv", bv); 
 			//포워드방식 같은영역안에 jsp페이지에서 꺼내 쓸 수 있다.
@@ -180,9 +197,22 @@ public class BoardController extends HttpServlet {
 				// 비밀번호가 다르면
 				url = request.getContextPath()+"/board/boardModify.aws?bidx="+bidx;
 			}
-			
-			
 		
+		} else if(location.equals("boardRecom.aws")) {
+			// System.out.println("boardRecom.aws"); // 디버깅 코드
+			String bidx = request.getParameter("bidx"); // bidx값을 요청하는 코드
+			
+			int bidxInt = Integer.parseInt(bidx);
+			
+			BoardDao bd = new BoardDao();
+			int recom = bd.boardRecomUpdate(bidxInt); // 추천수로 받음
+			
+			PrintWriter out = response.getWriter();
+			out.println("{\"recom\":\" "+recom+" \"}"); // { cnt : value }
+			// json 형식으로 만듬
+			
+			// paramMethod = "S"; // sendredirection 방식 = > 추천 후 해당 페이지를 보여준다
+			// url = "/board/boardContents.aws?bidx="+bidx; // url 위치 bidx는 String bidx로 설정한 값
 		}
 		
 		if(paramMethod.equals("F")) { 

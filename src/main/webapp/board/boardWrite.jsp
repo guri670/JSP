@@ -46,6 +46,7 @@ function check() {
 	  if (ans == true) {
 		  fm.action="<%=request.getContextPath()%>/board/boardWriteAction.aws";
 		  fm.method="post";
+		  fm.enctype="multipart/form-data"; // enctype
 		  fm.submit();
 	  }	  
 	  

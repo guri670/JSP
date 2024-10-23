@@ -42,6 +42,7 @@ public class BoardDao {
 				String contents = rs.getString("contents");
 				String writer = rs.getString("writer");
 				int viewcnt = rs.getInt("viewcnt");
+				int recom = rs.getInt("recom");
 				String writeday = rs.getString("writeday");
 
 				BoardVo BV = new BoardVo();
@@ -49,7 +50,8 @@ public class BoardDao {
 				BV.setSubject(subject);
 				BV.setContents(contents);
 				BV.setWriter(writer);
-				BV.setRecom(viewcnt);
+				BV.setViewcnt(viewcnt);
+				BV.setRecom(recom);
 				BV.setWriteday(writeday);
 
 				alist.add(BV);
@@ -225,7 +227,7 @@ public class BoardDao {
 			pstmt.setString(5, bv.getPassword());
 			
 			value = pstmt.executeUpdate();
-			
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -238,6 +240,64 @@ public class BoardDao {
 		}
 		
 		return value;
+	}
+	
+	public int boardViewCntUpdate(int bidx) {
+		
+		int value = 0;
+		String sql = "update board set viewcnt = viewcnt + 1 where bidx=?";
+		
+		try {
+			pstmt = conn.prepareStatement(sql); // sql 연결 
+			pstmt.setInt(1, bidx); // ? 값에 들어가는 
+			value = pstmt.executeUpdate();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				//conn.close(); // 조회수는 지속적으로 증가하기 때문에 conn객체는 닫는다
+				pstmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return value;
+	}
+	
+	public int boardRecomUpdate(int bidx) {
+		
+		int value = 0;
+		int recom = 0; // recom를 가져오도록 설정
+		String sql = "update board SET recom = recom + 1 where bidx =?";
+		String sql2 = "select recom from board where bidx=?";
+		ResultSet rs = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, bidx);
+			value = pstmt.executeUpdate();
+			
+			pstmt = conn.prepareStatement(sql2);
+			pstmt.setInt(1, bidx);
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) { //rs 에 recom이 있는지 검증 
+				recom = rs.getInt("recom"); // recom 변수에 담는다
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				conn.close();
+				pstmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return recom; // 추천수 반환
 	}
 }
 
