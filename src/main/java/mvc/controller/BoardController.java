@@ -7,12 +7,16 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Part;
 import mvc.dao.BoardDao;
 import mvc.vo.BoardVo;
 import mvc.vo.Criteria;
 import mvc.vo.PageMaker;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
@@ -76,14 +80,41 @@ public class BoardController extends HttpServlet {
 		} else if (location.equals("boardWriteAction.aws")) {
 			//System.out.println("boardWriteAction.aws"); // 들어왔는지 확인하는 디버깅
 			
-			// 저장될 위치
-			String savePath="D:\\dev\\eclipse-workspace\\java\\webPr\\mvc_programing2\\src\\main\\webapp\\Images";
-			int sizeLimit = 15*1024*1024; // 15Mb
-			String dataType ="UTF-8";
-			DefaultFileRenamePolicy policy = new DefaultFileRenamePolicy();
+			// 저장되는 위치
+			String savePath= "D:\\dev\\eclipse-workspace\\java\\webPr\\mvc_programing2\\src\\main\\webapp\\Images\\";
+			//System.out.println(savePath);
 			
-			MultipartRequest multi = new MultipartRequest(request,savePath,sizeLimit,dataType,policy);
+			// 업로드 되는 파일 사이즈
+			int fsize = (int) request.getPart("filename").getSize();
+			//System.out.println("fsize" + fsize);
 			
+			// 원본 파일이름
+			String originFileName="";
+			if(fsize != 0) {
+				Part filePart = (Part) request.getPart("filename"); // 넘어온 멀티파트 파일을 part 클래스로 담는다
+				//System.out.println("filePart ==> " + filePart);
+				
+				originFileName = getFileName(filePart); // 파일이름 가져오기
+				//System.out.println("originFileName ==> "+originFileName);
+				
+				//System.out.println("저장되는 위치 ===> " +savePath + originFileName);
+				
+				File file = new File(savePath + originFileName); // 파일 객체생성
+				InputStream is = filePart.getInputStream(); // 파일 읽어들이는 스트림 생성
+				FileOutputStream fos = null;
+	            
+	            fos = new FileOutputStream(file); // 파일 작성 및 완성하는 스트림 생성
+	            
+	            int temp = -1;
+	            
+	            while ((temp = is.read()) != -1) { // 반복문을 돌려 읽어들인 데이터를 output에 작성한다
+	               fos.write(temp);
+	            }
+	            
+	            is.close(); // inputsteam 객체 소멸 
+	            fos.close(); // outputsteam 객체 소멸
+				
+			}
 			
 			// 1. 파라미터값을 넘겨받는다
 			String subject = request.getParameter("subject");
@@ -100,7 +131,7 @@ public class BoardController extends HttpServlet {
 			bv.setWriter(writer);
 			bv.setPassword(password);
 			bv.setMidx(midx);
-			
+			bv.setFilename(originFileName);
 			// 2. db 처리한다
 			
 			BoardDao bd = new BoardDao();
@@ -213,6 +244,130 @@ public class BoardController extends HttpServlet {
 			
 			// paramMethod = "S"; // sendredirection 방식 = > 추천 후 해당 페이지를 보여준다
 			// url = "/board/boardContents.aws?bidx="+bidx; // url 위치 bidx는 String bidx로 설정한 값
+		
+		} else if(location.equals("boardDelete.aws")) {
+			
+			String bidx = request.getParameter("bidx");
+			
+			request.setAttribute("bidx", bidx);
+			
+			paramMethod = "F";
+			url = "/board/boardDelete.jsp";
+			
+		} else if(location.equals("boardDeleteAction.aws")) {
+			
+			String bidx = request.getParameter("bidx");
+			String password = request.getParameter("password");
+			
+			// 처리하기
+			BoardDao bd = new BoardDao();
+			int value = bd.boardDelete(Integer.parseInt(bidx), password); //0,1
+			
+			paramMethod = "S";
+			if(value == 1) {
+				url = request.getContextPath()+"/board/boardList.aws";
+			}else {
+				url = request.getContextPath()+"/board/boardDelete.aws?bidx="+bidx;
+				
+			}
+			
+			paramMethod = "S";
+			url = request.getContextPath()+"/board/boardList.aws";
+			
+		} else if(location.equals("boardReply.aws")) {
+			String bidx = request.getParameter("bidx");
+			
+			BoardDao bd = new BoardDao();
+			BoardVo bv = bd.boardSelectOne(Integer.parseInt(bidx)); 
+			int originbidx = bv.getOriginbidx();
+			int depth = bv.getDepth();
+			int level_ = bv.getLevel_();
+			
+			request.setAttribute("bidx", Integer.parseInt(bidx));
+			request.setAttribute("originbidx", originbidx);
+			request.setAttribute("depth", depth);
+			request.setAttribute("level_", level_);
+			
+			
+			paramMethod ="F";
+			url = "/board/boardReply.jsp";
+			
+		} else if(location.equals("boardReplyAction.aws")) {
+			System.out.println("boardReplyAction");
+			
+			// 저장되는 위치
+			String savePath= "D:\\dev\\eclipse-workspace\\java\\webPr\\mvc_programing2\\src\\main\\webapp\\Images\\";
+			
+			// 업로드 되는 파일 사이즈
+			int fsize = (int) request.getPart("filename").getSize();
+			System.out.println("fsize"+fsize);
+			// 원본 파일이름
+			
+			String originFileName="";
+			if(fsize != 0) {
+				Part filePart = (Part) request.getPart("filename"); // 넘어온 멀티파트 파일을 part 클래스로 담는다
+				
+				System.out.println("filePart ==> " + filePart);
+				
+				originFileName = getFileName(filePart); // 파일이름 가져오기
+				
+				
+				File file = new File(savePath + originFileName); // 파일 객체생성
+				InputStream is = filePart.getInputStream(); // 파일 읽어들이는 스트림 생성
+				FileOutputStream fos = null;
+	            
+	            fos = new FileOutputStream(file); // 파일 작성 및 완성하는 스트림 생성
+	            
+	            int temp = -1;
+	            
+	            while ((temp = is.read()) != -1) { // 반복문을 돌려 읽어들인 데이터를 output에 작성한다
+	               fos.write(temp);
+	            }
+	            
+	            is.close();
+	            fos.close(); 
+				
+			} else {
+				originFileName = "";
+			}
+			
+			// 1. 파라미터값을 넘겨받는다
+			String subject = request.getParameter("subject");
+			String contents = request.getParameter("contents");
+			String writer = request.getParameter("writer");
+			String password = request.getParameter("password");
+			String bidx = request.getParameter("bidx");
+			String originbidx = request.getParameter("originbidx");
+			String depth = request.getParameter("depth");
+			String level_ = request.getParameter("level_");
+			
+			HttpSession session = request.getSession(); // 세션 객체를 불러와서
+			int midx = Integer.parseInt(session.getAttribute("midx").toString()); // 세션변수 midx 값을 꺼낸다.
+			
+			BoardVo bv = new BoardVo();
+			bv.setSubject(subject);
+			bv.setContents(contents);
+			bv.setWriter(writer);
+			bv.setPassword(password);
+			bv.setMidx(midx);
+			bv.setFilename(originFileName);
+			bv.setBidx(Integer.parseInt(bidx));
+			bv.setOriginbidx(Integer.parseInt(originbidx));
+			bv.setDepth(Integer.parseInt(depth));
+			bv.setLevel_(Integer.parseInt(level_));			
+			
+			BoardDao bd = new BoardDao();
+			int maxbidx = bd.boardReply(bv); 
+			
+			paramMethod ="S";
+			if(maxbidx != 0) {
+				url = request.getContextPath()+"/board/boardContents.aws?bidx="+maxbidx;				
+			} else {
+				url = request.getContextPath()+"/board/boardReply.aws?bidx="+bidx;
+			}
+			
+			
+			
 		}
 		
 		if(paramMethod.equals("F")) { 
@@ -226,6 +381,19 @@ public class BoardController extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
 	}
+	
+	public String getFileName(Part filePart) { // 파일 이름을 추출하는 메서드
+		
+		for (String filePartData : filePart.getHeader("Content-Disposition").split(";")) {
+			System.out.println(filePartData);
+			
+			if(filePartData.trim().startsWith("filename")) {
+				return filePartData.substring(filePartData.indexOf("=")+1).trim().replace("\"", ""); // \" 와 "" 를 replace한다
+			}
+		}
+		return null;
+	}
+
 
 }
 

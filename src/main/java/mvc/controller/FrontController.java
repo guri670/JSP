@@ -1,6 +1,7 @@
 package mvc.controller;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +9,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @WebServlet("/FrontController")
+@MultipartConfig( // 멀티파일을 설정한다
+		fileSizeThreshold = 1024 * 1024 * 1, // 1MB
+		maxFileSize = 1024 * 1024 * 10, // 10MB
+		maxRequestSize = 1024 * 1024 * 15, // 15MB
+		location = "D:/dev/temp" //임시로 보관하는 위치
+		)
+
 public class FrontController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 

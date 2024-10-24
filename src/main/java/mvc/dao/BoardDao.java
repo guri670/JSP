@@ -27,7 +27,7 @@ public class BoardDao {
 		
 		ArrayList<BoardVo> alist = new ArrayList<BoardVo>(); 
 		// ArrayList 컬렉션 객체에 BoardVo를 담겠다 BoardVo는 컬럼값을 담겠다.
-		String sql = "select *from board order by originbidx desc, depth asc limit ?,?";
+		String sql = "select * from board where delyn = 'N' order by originbidx desc, depth asc limit ?,?";
 		// board에 저장된 모든 값을 가져오는 함수
 		ResultSet rs = null;
 		try {
@@ -113,9 +113,10 @@ public class BoardDao {
 		String writer = bv.getWriter();
 		String password = bv.getPassword();
 		int midx = bv.getMidx();
+		String filename = bv.getFilename();
 		
-		String sql = "insert into board (originbidx,depth,level_,subject,contents,writer,password,midx)\r\n"
-				+ "value(null,0,0,?,?,?,?,?)";
+		String sql = "insert into board (originbidx,depth,level_,subject,contents,writer,password,midx,filename)\r\n"
+				+ "value(null,0,0,?,?,?,?,?,?)";
 		String sql2 = "update board set originbidx =(select A.maxbidx from(select max(bidx) as maxbidx from board)A)\r\n"
 				+ "where bidx=(select A.maxbidx from(select max(bidx) as maxbidx from board)A)";
 		try {
@@ -127,6 +128,7 @@ public class BoardDao {
 			pstmt.setString(3, writer);
 			pstmt.setString(4, password);
 			pstmt.setInt(5, midx);
+			pstmt.setString(6, filename);
 			int exec = pstmt.executeUpdate(); // 실행되면 1 안되면 0
 			
 			pstmt = conn.prepareStatement(sql2);
@@ -218,7 +220,7 @@ public class BoardDao {
 		int value=0;
 		String sql = "update board set subject=?, contents=?, writer=?, modifyday= now() where bidx=? and password=?";
 		
-		try {
+		try { 
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, bv.getSubject());
 			pstmt.setString(2, bv.getContents());
@@ -298,6 +300,101 @@ public class BoardDao {
 			}
 		}
 		return recom; // 추천수 반환
+	}
+	
+	public int boardDelete(int bidx , String password) {
+		
+		int value = 0;
+		
+		String sql = "update board set delyn = 'Y' where bidx=? and password=?"; 
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, bidx);
+			pstmt.setString(2, password);
+			value = pstmt.executeUpdate(); //성공하면 1 실패하면 0
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				conn.close();
+				pstmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return value;
+	}
+	
+	public int boardReply(BoardVo bv) {
+		
+//		int value = 0;
+		int maxbidx =0;
+		
+//		int originbidx = bv.getOriginbidx();
+//		int depth = bv.getDepth();
+//		int level_ = bv.getLevel_();
+//		String subject = bv.getSubject();
+//		String contents = bv.getContents();
+//		String writer = bv.getWriter();
+//		int midx = bv.getMidx();
+//		String filename = bv.getFilename();
+//		String password = bv.getPassword();
+		
+		String sql = "update board set depth = depth+1 where originbidx=? and depth > ?";
+		String sql2 = "insert into board (originbidx,depth,level_,subject,contents,writer,midx,filename,password) "
+				+ "values(?,?,?,?,?,?,?,?,?)";
+		String sql3 = "select max(bidx) as maxbidx from board where originbidx=?";
+		
+		
+		try {
+			conn.setAutoCommit(false); // 수동 커밋 (커밋도중 문제가 발생할때 대비하기위함)
+			
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, bv.getOriginbidx());
+			pstmt.setInt(2, bv.getDepth());
+			int exec = pstmt.executeUpdate(); // 실행되면 1 안되면 0
+			
+			pstmt = conn.prepareStatement(sql2);
+			pstmt.setInt(1, bv.getOriginbidx());
+			pstmt.setInt(2, bv.getDepth()+1);
+			pstmt.setInt(3, bv.getLevel_()+1);
+			pstmt.setString(4, bv.getSubject());
+			pstmt.setString(5, bv.getContents());
+			pstmt.setString(6, bv.getWriter());
+			pstmt.setInt(7, bv.getMidx());
+			pstmt.setString(8, bv.getFilename());
+			pstmt.setString(9, bv.getPassword());
+			int exec2 = pstmt.executeUpdate(); // 실행되면 1 안되면 0
+			
+			ResultSet rs = null;
+			pstmt = conn.prepareStatement(sql3);
+			pstmt.setInt(1, bv.getOriginbidx());
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) {
+				maxbidx = rs.getInt("maxbidx");
+			}
+			
+			conn.commit(); // 일괄처리 커밋(둘중 하나라도 안되면 반영x 둘다 되면 일괄처리 커밋 실행)
+			
+		} catch (SQLException e) {
+			try {
+				conn.rollback(); // 실행중 오류 발생시 rollback 되도록 설정
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		} finally { // 객체 소멸, conn 소멸
+			try{
+				pstmt.close();
+				conn.close();
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return maxbidx;
 	}
 }
 
