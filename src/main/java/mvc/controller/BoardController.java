@@ -2,6 +2,7 @@ package mvc.controller;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,12 +13,16 @@ import mvc.dao.BoardDao;
 import mvc.vo.BoardVo;
 import mvc.vo.Criteria;
 import mvc.vo.PageMaker;
+import mvc.vo.SearchCriteria;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import com.oreilly.servlet.MultipartRequest;
@@ -46,21 +51,32 @@ public class BoardController extends HttpServlet {
 			if (page == null) page = "1";
 			int pageInt = Integer.parseInt(page); //문자를 숫자로 변경
 			
-			Criteria cri = new Criteria();
-			cri.setPage(pageInt);
+			String searchType = request.getParameter("searchType");
+			String keyword = request.getParameter("keyword");
+			// 이미 criteria가 있는 상황이지만 search도 가지고 다니면 많기 때문에
+			// criteria에 search를 상속받아서 사용 -> vo에서 searchcriteria 생성
+			
+			if(keyword == null) keyword=""; 
+			// if문 안에 if문 사용시 중괄호 사용x
+			
+			
+			SearchCriteria scri = new SearchCriteria();
+			scri.setPage(pageInt);
+			scri.setSearchType(searchType);
+			scri.setKeyword(keyword);
 			
 			PageMaker pm = new PageMaker();
-			pm.setCri(cri); // PageMaker에 criteria를 담아서 가지고다닌다
+			pm.setScri(scri); // PageMaker에 searchcriteria를 담아서 가지고다닌다
 			
 			
 			BoardDao bd = new BoardDao();
 			// 페이징 처리를 위한 전체 데이터 갯수 가지고오기 쿼리 작성
-			int boardCnt = bd.boardTotalCount();
+			int boardCnt = bd.boardTotalCount(scri);
 			// System.out.println("게시물 수는? "+boardCnt);
 			pm.setTotalCnt(boardCnt); // PageMaker에 전체 게시물 수를 담아서 페이지계산 
 			
 			
-			ArrayList<BoardVo> alist = bd.boardSelectAll(cri);
+			ArrayList<BoardVo> alist = bd.boardSelectAll(scri);
 			//System.out.println("alist==> "+alist); //객체 주소가 나오면 객체가 생성된것을 알 수 있다.
 			
 			request.setAttribute("alist", alist ); // 화면까지 가지고 가기위해 request객체에 담는다.
@@ -125,6 +141,15 @@ public class BoardController extends HttpServlet {
 			HttpSession session = request.getSession(); // 세션 객체를 불러와서
 			int midx = Integer.parseInt(session.getAttribute("midx").toString()); // 세션변수 midx 값을 꺼낸다.
 			
+			//String ip = request.getRemoteAddr(); // 현재 접속한 remoteIP를 뽑을 수 있다.
+			String ip = ""; 
+			try {
+				ip = getUserIp(request);
+				System.out.println("ip: " + ip);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
 			BoardVo bv = new BoardVo();
 			bv.setSubject(subject);
 			bv.setContents(contents);
@@ -132,6 +157,7 @@ public class BoardController extends HttpServlet {
 			bv.setPassword(password);
 			bv.setMidx(midx);
 			bv.setFilename(originFileName);
+			bv.setIp(ip);
 			// 2. db 처리한다
 			
 			BoardDao bd = new BoardDao();
@@ -344,6 +370,14 @@ public class BoardController extends HttpServlet {
 			HttpSession session = request.getSession(); // 세션 객체를 불러와서
 			int midx = Integer.parseInt(session.getAttribute("midx").toString()); // 세션변수 midx 값을 꺼낸다.
 			
+			String ip = ""; 
+			try {
+				ip = getUserIp(request);
+				System.out.println("ip: " + ip);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
 			BoardVo bv = new BoardVo();
 			bv.setSubject(subject);
 			bv.setContents(contents);
@@ -354,7 +388,8 @@ public class BoardController extends HttpServlet {
 			bv.setBidx(Integer.parseInt(bidx));
 			bv.setOriginbidx(Integer.parseInt(originbidx));
 			bv.setDepth(Integer.parseInt(depth));
-			bv.setLevel_(Integer.parseInt(level_));			
+			bv.setLevel_(Integer.parseInt(level_));	
+			bv.setIp(ip);
 			
 			BoardDao bd = new BoardDao();
 			int maxbidx = bd.boardReply(bv); 
@@ -368,6 +403,53 @@ public class BoardController extends HttpServlet {
 			
 			
 			
+		} else if(location.equals("boardDownload.aws")) {
+			// System.out.println("boardDownload.aws");
+			
+			
+			String filename = request.getParameter("filename");
+			String savePath= "D:\\dev\\eclipse-workspace\\java\\webPr\\mvc_programing2\\src\\main\\webapp\\Images\\";
+
+			ServletOutputStream sos = response.getOutputStream();
+			
+			String downfile = savePath+filename;
+			// System.out.println("realPath: " + downfile);
+			
+			File f = new File(downfile); //파일생성자 호출
+			
+			String header = request.getHeader("User-Agent");
+			
+			String fileName="";
+			response.setHeader("Cache-Control", "no-cache"); //
+			if(header.contains("Chrome") || header.contains("Opera")) {
+
+				fileName = new String(filename.getBytes("UTF-8"), "ISO-8859-1");
+				response.setHeader("Content-Disposition","attachment;fileName=" + filename); //헤더정보는 filename
+			
+			} else if (header.contains("MSIE") || header.contains("Trident") || header.contains("Edge")) {
+				
+				URLEncoder.encode(filename,"UTF-8").replaceAll("\\+", "%20");
+				response.setHeader("Content-Disposition","attachment;fileName=" + filename); //헤더정보는 filename
+			
+			} else {
+			
+				response.setHeader("Content-Disposition","attachment;fileName=" + filename); //헤더정보는 filename
+			}
+			
+			FileInputStream in = new FileInputStream(f); // 파일을 버퍼로 읽어와서 출력한다
+			
+			byte[] buffer = new byte[1024 * 8]; //속도
+			
+			while(true) {
+				int count = in.read(buffer); // byte 속도로 읽어들인다
+				if(count == -1) { //
+					break;
+				}
+				sos.write(buffer,0,count);				
+			}
+			
+			in.close(); // inputstream 소멸
+			sos.close(); // outputstream 소멸
 		}
 		
 		if(paramMethod.equals("F")) { 
@@ -393,8 +475,44 @@ public class BoardController extends HttpServlet {
 		}
 		return null;
 	}
-
-
+	
+	public String getUserIp(HttpServletRequest request) throws Exception {		
+        String ip = null;    
+        ip = request.getHeader("X-Forwarded-For");
+        
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) { 
+            ip = request.getHeader("Proxy-Client-IP"); 
+        } 
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) { 
+            ip = request.getHeader("WL-Proxy-Client-IP"); 
+        } 
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) { 
+            ip = request.getHeader("HTTP_CLIENT_IP"); 
+        } 
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) { 
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR"); 
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) { 
+            ip = request.getHeader("X-Real-IP"); 
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) { 
+            ip = request.getHeader("X-RealIP"); 
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) { 
+            ip = request.getHeader("REMOTE_ADDR");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) { 
+            ip = request.getRemoteAddr(); 
+        }        
+        
+        if (ip.equals("0:0:0:0:0:0:0:1") || ip.equals("127.0.0.1")) {
+        	InetAddress address = InetAddress.getLocalHost();
+        	ip = address.getHostAddress();
+        }        
+		
+		return ip;
+	}
+	
 }
 
 

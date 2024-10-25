@@ -73,16 +73,19 @@ $(document).ready(function() {
 	<h2 class="contentTitle"><%=bv.getSubject() %> (조회수:<%=bv.getViewcnt() %>)</h2>
 	<input type = "button" id = "btn" value = "추천 : <%=bv.getRecom()%>">
 	<p class="write"><%=bv.getWriter() %> (<%=bv.getWriteday() %>)</p>
+	<hr>
 	<div class="content">
 		<%=bv.getContents() %>
 		
 	</div>
-	<% if(bv.getFilename() == null || bv.getFilename().equals("")) {} else{ %>
-	<a href="#" class="fileDown">
-	<img src="<%=request.getContextPath() %>/Images/<%=bv.getFilename() %>">
-	첨부파일입니다. 
-	</a>
+	<% if (bv.getFilename() == null || bv.getFilename().equals("") ) {}else{ %>	
+	<img src="<%=request.getContextPath() %>/Images/<%=bv.getFilename() %>">	
+	<p>
+	<a href="<%=request.getContextPath() %>/board/boardDownload.aws?filename=<%=bv.getFilename() %>" class="fileDown">	
+	첨부파일 다운로드</a>
+	</p>	
 	<%} %>
+	
 	
 </article>
 	
