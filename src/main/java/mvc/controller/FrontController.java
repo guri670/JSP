@@ -35,7 +35,10 @@ public class FrontController extends HttpServlet {
 		}else if(entity[1].equals("board")) {
 			BoardController bc = new BoardController(entity[2]);
 			bc.doGet(request, response);
-		}
+		}else if(entity[1].equals("comment")) {
+			CommentController cc = new CommentController(entity[2]);
+			cc.doGet(request, response);
+     	}
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-    
+<%@page include file="/common/loginCheck.jsp" %>
 <%@page import="mvc.vo.BoardVo" %>
 <%
 BoardVo bv = (BoardVo)request.getAttribute("bv");
@@ -78,13 +78,13 @@ function check() {
 		</tr>
 		<tr>
 			<th>첨부파일</th>
-			<td><input type="uploadfile"></td>
+			<td><input type="file" name="filename"></td>
 		</tr>
 	</table>
 	
 	<div class="btnBox">
 		<button type="button" class="btn" onclick="check();">저장</button>
-		<a class="btn aBtn" href="./detail.html">취소</a>
+		<a class="btn aBtn" class="modifyBtn" onclick="history.back();">취소</a>
 	</div>	
 </form>
 

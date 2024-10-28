@@ -3,6 +3,7 @@
 <%@ page import="java.util.*"%>
 <%@ page import="mvc.vo.*"%>
 
+
 <%
 ArrayList<BoardVo> alist = (ArrayList<BoardVo>)request.getAttribute("alist");
 // System.out.println("alist==> "+alist);
